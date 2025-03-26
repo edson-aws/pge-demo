@@ -3,29 +3,25 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.9
-    commands:
-      - wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
-      - unzip terraform_${TF_VERSION}_linux_amd64.zip
-      - mv terraform /usr/local/bin/
+      nodejs: 16
   
   pre_build:
     commands:
-      - terraform init
-      - terraform validate
-  
+      - echo "Installing dependencies"
+      - npm install
+      
   build:
     commands:
-      - terraform plan -out=tfplan
-      - terraform show -json tfplan > tfplan.json
-
+      - echo "Building application"
+      - npm run build
+      
   post_build:
     commands:
-      - aws s3 cp tfplan s3://${ARTIFACT_BUCKET}/tfplan
-      - aws s3 cp tfplan.json s3://${ARTIFACT_BUCKET}/tfplan.json
+      - echo "Preparing deployment package"
 
 artifacts:
   files:
-    - tfplan
-    - tfplan.json
-    - '**/*'
+    - appspec.yml
+    - scripts/**/*
+    - build/**/*
+  discard-paths: no
